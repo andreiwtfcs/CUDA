@@ -1,20 +1,18 @@
-
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
-
 #include <stdio.h>
 
-#define N 5
+#define NR 5
 #define  INF 99999
 
 using namespace std;
 
-__global__ void RoyFloyd(int matrixGraph[N][N])
+__global__ void RoyFloyd(int matrixGraph[NR][NR])
 {
 
 	int i = threadIdx.x;
 	int j = threadIdx.y;
-	for (int k = 1; k <= N; k++)
+	for (int k = 1; k <= NR; k++)
 	{
 		if (matrixGraph[i][k] + matrixGraph[k][j] < matrixGraph[i][j]) {
 			matrixGraph[i][j] = matrixGraph[i][k] + matrixGraph[k][j];
@@ -34,25 +32,25 @@ int main()
 {
 	int *d_matrix;
 
-	cudaMalloc(&d_matrix, N*N * sizeof(int)); //alocam memorie liniara
+	cudaMalloc(&d_matrix, NR*NR * sizeof(int)); //alocam memorie liniara
 
-	for (int h_k = 1; h_k <= N; h_k++)
+	for (int h_k = 1; h_k <= NR; h_k++)
 	{
 		int* d_k;
 
-		cudaMemcpy(d_matrix, h_matrixGraph, N * N * sizeof(int), cudaMemcpyHostToDevice); //transferam memoria din host in device
+		cudaMemcpy(d_matrix, h_matrixGraph, NR * NR * sizeof(int), cudaMemcpyHostToDevice); //transferam memoria din host in device
 		cudaMalloc(&d_k, sizeof(int)); //alocare memorie
 		cudaMemcpy(d_k, &h_k, sizeof(int), cudaMemcpyHostToDevice); //transferam din host in device
 		
 		int numBlocks = 1;
 
-		dim3 threadsPerBlock(N, N); //invocare kernel creem dimensiunea, mai exact doua dimensiuni pentru matrice
+		dim3 threadsPerBlock(NR, NR); //invocare kernel creem dimensiunea, mai exact doua dimensiuni pentru matrice
 		RoyFloyd<<<numBlocks, threadsPerBlock>>>(d_matrix);
-		cudaMemcpy(h_matrixGraph, d_matrix, N * N * sizeof(int), cudaMemcpyDeviceToHost);
+		cudaMemcpy(h_matrixGraph, d_matrix, NR * NR * sizeof(int), cudaMemcpyDeviceToHost);
 	}
 
-	for (int i = 1; i <= N; i++) {
-		for (int j = 1; j <= N; j++)
+	for (int i = 1; i <= NR; i++) {
+		for (int j = 1; j <= NR; j++)
 		{
 			if (h_matrixGraph[i][j] == INF)
 				printf("-, ");
